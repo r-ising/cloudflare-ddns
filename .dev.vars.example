@@ -1,0 +1,8 @@
+# Example environment variables for local development
+# Copy this file to .dev.vars and fill in your actual values
+# DO NOT commit .dev.vars to git (it's in .gitignore)
+
+DDNS_USERNAME=testuser
+DDNS_PASSWORD=testpassword
+CLOUDFLARE_API_TOKEN=your_cloudflare_api_token_here
+CLOUDFLARE_ZONE_ID=your_zone_id_here
