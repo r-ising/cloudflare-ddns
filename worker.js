@@ -24,6 +24,17 @@ async function handleRequest(request, env) {
   if (url.pathname !== '/update') {
     return new Response('Not Found', { status: 404 })
   }
+
+  // Check Basic Authentication
+  const authHeader = request.headers.get('Authorization')
+  if (!authHeader || !await validateAuth(authHeader, env)) {
+    return new Response('badauth - authentication failed', { 
+      status: 401,
+      headers: {
+        'WWW-Authenticate': 'Basic realm="DDNS"'
+      }
+    })
+  }
   
   // Parse query parameters
   const hostname = url.searchParams.get('hostname')
@@ -43,17 +54,6 @@ async function handleRequest(request, env) {
   // Validate IP address format (IPv4 or IPv6)
   if (!isValidIP(ipAddress)) {
     return new Response('badparam - invalid IP address format', { status: 400 })
-  }
-  
-  // Check Basic Authentication
-  const authHeader = request.headers.get('Authorization')
-  if (!authHeader || !await validateAuth(authHeader, env)) {
-    return new Response('badauth - authentication failed', { 
-      status: 401,
-      headers: {
-        'WWW-Authenticate': 'Basic realm="DDNS"'
-      }
-    })
   }
   
   try {
