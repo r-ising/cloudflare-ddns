@@ -11,11 +11,13 @@
  * - Password: configured in worker environment variables
  */
 
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request))
-})
+export default {
+  async fetch(request, env, ctx) {
+    return handleRequest(request, env)
+  }
+}
 
-async function handleRequest(request) {
+async function handleRequest(request, env) {
   const url = new URL(request.url)
   
   // Only handle /update endpoint
@@ -45,7 +47,7 @@ async function handleRequest(request) {
   
   // Check Basic Authentication
   const authHeader = request.headers.get('Authorization')
-  if (!authHeader || !await validateAuth(authHeader)) {
+  if (!authHeader || !await validateAuth(authHeader, env)) {
     return new Response('badauth - authentication failed', { 
       status: 401,
       headers: {
@@ -56,7 +58,7 @@ async function handleRequest(request) {
   
   try {
     // Update DNS record
-    const result = await updateDNSRecord(hostname, ipAddress)
+    const result = await updateDNSRecord(hostname, ipAddress, env)
     
     if (result.success) {
       // FritzBox expects specific success responses
@@ -73,7 +75,7 @@ async function handleRequest(request) {
 /**
  * Validate Basic Authentication
  */
-async function validateAuth(authHeader) {
+async function validateAuth(authHeader, env) {
   try {
     const [scheme, credentials] = authHeader.split(' ')
     
@@ -86,8 +88,8 @@ async function validateAuth(authHeader) {
     
     // Check against environment variables
     // These should be set in your Cloudflare Worker settings
-    const validUsername = DDNS_USERNAME
-    const validPassword = DDNS_PASSWORD
+    const validUsername = env.DDNS_USERNAME
+    const validPassword = env.DDNS_PASSWORD
     
     return username === validUsername && password === validPassword
   } catch (error) {
@@ -102,8 +104,6 @@ async function validateAuth(authHeader) {
 function isValidIP(ip) {
   // IPv4 pattern
   const ipv4Pattern = /^(\d{1,3}\.){3}\d{1,3}$/
-  // IPv6 pattern (simplified)
-  const ipv6Pattern = /^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$/
   
   if (ipv4Pattern.test(ip)) {
     // Validate each octet is 0-255
@@ -114,15 +114,19 @@ function isValidIP(ip) {
     })
   }
   
+  // IPv6 validation - more robust pattern
+  // Matches full IPv6, compressed IPv6 (::), and mixed notation
+  const ipv6Pattern = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|::)$/
+  
   return ipv6Pattern.test(ip)
 }
 
 /**
  * Update DNS record in Cloudflare
  */
-async function updateDNSRecord(hostname, ipAddress) {
-  const apiToken = CLOUDFLARE_API_TOKEN
-  const zoneId = CLOUDFLARE_ZONE_ID
+async function updateDNSRecord(hostname, ipAddress, env) {
+  const apiToken = env.CLOUDFLARE_API_TOKEN
+  const zoneId = env.CLOUDFLARE_ZONE_ID
   
   if (!apiToken || !zoneId) {
     return {
