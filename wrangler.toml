@@ -1,0 +1,16 @@
+name = "cloudflare-ddns"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# Environment variables (secrets should be set via wrangler secret put)
+# wrangler secret put DDNS_USERNAME
+# wrangler secret put DDNS_PASSWORD
+# wrangler secret put CLOUDFLARE_API_TOKEN
+# wrangler secret put CLOUDFLARE_ZONE_ID
+
+# Example for development (use secrets in production!)
+# [vars]
+# DDNS_USERNAME = "your-username"
+# DDNS_PASSWORD = "your-password"
+# CLOUDFLARE_API_TOKEN = "your-cloudflare-api-token"
+# CLOUDFLARE_ZONE_ID = "your-zone-id"
