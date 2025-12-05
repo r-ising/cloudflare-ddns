@@ -21,23 +21,23 @@ A Cloudflare Worker that provides a Dynamic DNS (DDNS) service compatible with F
 
 ## Installation
 
-### 1. Install Wrangler CLI
-
-```bash
-npm install -g wrangler
-```
-
-### 2. Clone this repository
+### 1. Clone this repository
 
 ```bash
 git clone https://github.com/r-ising/cloudflare-ddns.git
 cd cloudflare-ddns
 ```
 
-### 3. Login to Cloudflare
+### 2. Install wrangler
 
 ```bash
-wrangler login
+npm install
+```
+
+### 2. Login to Cloudflare
+
+```bash
+npx wrangler login
 ```
 
 ### 4. Get your Cloudflare Zone ID
@@ -61,22 +61,22 @@ Set up the required secrets using Wrangler:
 
 ```bash
 # Set your DDNS username (you choose this)
-wrangler secret put DDNS_USERNAME
+npx wrangler secret put DDNS_USERNAME
 
 # Set your DDNS password (you choose this)
-wrangler secret put DDNS_PASSWORD
+npx wrangler secret put DDNS_PASSWORD
 
 # Set your Cloudflare API token
-wrangler secret put CLOUDFLARE_API_TOKEN
+npx wrangler secret put CLOUDFLARE_API_TOKEN
 
 # Set your Cloudflare Zone ID
-wrangler secret put CLOUDFLARE_ZONE_ID
+npx wrangler secret put CLOUDFLARE_ZONE_ID
 ```
 
 ### 7. Deploy the worker
 
 ```bash
-wrangler deploy
+npx wrangler deploy
 ```
 
 After deployment, you'll get a URL like: `https://cloudflare-ddns.your-subdomain.workers.dev`
@@ -130,13 +130,13 @@ Expected response: `good 1.2.3.4`
 ## Troubleshooting
 
 ### Authentication fails
-- Verify your username and password are correctly set using `wrangler secret list`
+- Verify your username and password are correctly set using `npx wrangler secret list`
 - Check that FritzBox is sending the correct credentials
 
 ### DNS record not updating
 - Verify your Cloudflare API token has DNS edit permissions
 - Check that the Zone ID matches your domain
-- View worker logs with `wrangler tail`
+- View worker logs with `npx wrangler tail`
 
 ### FritzBox shows error
 - Check the Update-URL format is correct
@@ -156,7 +156,7 @@ Expected response: `good 1.2.3.4`
 To test locally:
 
 ```bash
-wrangler dev
+npx wrangler dev
 ```
 
 This starts a local development server. You can test with:
