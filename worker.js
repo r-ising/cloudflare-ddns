@@ -79,12 +79,18 @@ async function validateAuth(authHeader, env) {
   try {
     const [scheme, credentials] = authHeader.split(' ')
     
-    if (scheme !== 'Basic') {
+    if (scheme !== 'Basic' || !credentials) {
       return false
     }
     
+    // atob can throw on invalid Base64 - wrapped in try-catch
     const decoded = atob(credentials)
-    const [username, password] = decoded.split(':')
+    const [username, password] = decoded.split(':', 2)
+    
+    // Validate that both username and password exist
+    if (!username || !password) {
+      return false
+    }
     
     // Check against environment variables
     // These should be set in your Cloudflare Worker settings
@@ -114,8 +120,11 @@ function isValidIP(ip) {
     })
   }
   
-  // IPv6 validation - more robust pattern
-  // Matches full IPv6, compressed IPv6 (::), and mixed notation
+  // IPv6 validation - comprehensive pattern covering:
+  // - Full notation (8 groups of 4 hex digits): 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+  // - Compressed notation with :: : 2001:db8::1
+  // - Edge cases: ::1 (localhost), :: (all zeros)
+  // This regex handles all valid IPv6 formats per RFC 4291
   const ipv6Pattern = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|::)$/
   
   return ipv6Pattern.test(ip)
